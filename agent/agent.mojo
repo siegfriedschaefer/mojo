@@ -6,14 +6,26 @@ struct Role:
     alias USER = 2
     alias SYSTEM = 3
 
+struct ROLE:
+    var role: Int
+
+    alias AGENT = ROLE(1)
+    alias USER = ROLE(2)
+    alias SYSTEM = ROLE(3)
+
+    fn __init__(inout self, role: Int) :
+        self.role = role
+
 
 struct Message :
     var text: String
-    var role: Role
+    var role: ROLE
+    var arole: Role
 
-    fn __init__(inout self, text: String, role: Role) :
+    fn __init__(inout self, text: String, role: ROLE) :
         self.text = text
         self.role = role
+        self.arole = Role.AGENT
 
 
 struct Agent :
@@ -40,7 +52,7 @@ struct Agent :
 
     fn prompt(inout self, input: String) -> String:
         print("input: " + input)
-        var message = Message(text = input, role = Role.USER)
+        var message = Message(text = input, role = ROLE.USER)
         self.history[0] = message
         return input
 
