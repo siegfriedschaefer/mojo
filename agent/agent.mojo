@@ -1,32 +1,25 @@
 
-from collections.vector import InlinedFixedVector
+from collections import List
 
-struct Role:
-    alias AGENT = 1
-    alias USER = 2
-    alias SYSTEM = 3
-
-struct ROLE:
-    var role: Int
-
-    alias AGENT = ROLE(1)
-    alias USER = ROLE(2)
-    alias SYSTEM = ROLE(3)
-
-    fn __init__(inout self, role: Int) :
-        self.role = role
-
+alias LLM_ROLE_AGENT = 1
+alias LLM_ROLE_USER = 2
+alias LLM_ROLE_SYSTEM = 3
 
 struct Message :
     var text: String
-    var role: ROLE
-    var arole: Role
+    var role: Int
 
-    fn __init__(inout self, text: String, role: ROLE) :
+    fn __init__(inout self, text: String, role: Int = LLM_ROLE_USER):
         self.text = text
         self.role = role
-        self.arole = Role.AGENT
 
+    fn __copyinit__(inout self, existing: Self):
+        self.text = existing.text
+        self.role = existing.role        
+
+    fn __moveinit__(inout self, owned existing: Self):
+        self.text = existing.text
+        self.role = existing.role        
 
 struct Agent :
     """
@@ -41,19 +34,17 @@ struct Agent :
     - defines the model of the agent.
     """   
     var model_ref: String
-
-    var history: InlinedFixedVector[Message]
+    var history: List[Message]
 
 
     fn __init__(inout self, sys_prompt: String, model_ref: String) :
         self.sys_prompt = sys_prompt
         self.model_ref = model_ref
-        self.history = InlinedFixedVector[Message](10)
+        self.history = List[Message]()
 
     fn prompt(inout self, input: String) -> String:
-        print("input: " + input)
-        var message = Message(text = input, role = ROLE.USER)
-        self.history[0] = message
+        var message = Message(text = input, role = LLM_ROLE_USER)
+        self.history.append(message)
         return input
 
 
@@ -61,8 +52,10 @@ def main():
     var agent = Agent(model_ref = "llama3", sys_prompt = "user")
     var result = agent.prompt('hello')
 
+    var message = agent.history.pop()
+
     print("system: " + agent.sys_prompt)
     print("model: " + agent.model_ref)
     print("result: " + result)
-
+    print("message: " + message.text + " role: " + message.role)
 
